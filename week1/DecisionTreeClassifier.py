@@ -34,6 +34,7 @@ def main():
     clf.random_state = 241
     #learning tree
     clf.fit(X,y)
+    print(clf)
     print(clf.feature_importances_)
 main()
 
