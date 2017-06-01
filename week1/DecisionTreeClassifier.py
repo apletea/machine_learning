@@ -25,7 +25,7 @@ def main():
     #convert (male,female) -> (0,1)
     SexN = data2.Sex.factorize()
     #adding column
-    data2['SexN'] = SexN[0]
+    data2.loc[:,'SexN'] = SexN[0]
     #dataset for tree
     X = data2.loc[ :, ['Pclass', 'Fare' , 'Age', 'SexN']]
     y = data2['Survived']

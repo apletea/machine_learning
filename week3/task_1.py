@@ -10,7 +10,7 @@ def main():
 
     y=data[0]
     X = data.loc[:,1:2]
-
+    #SVC clasiffier C
     clf = SVC(C=100000, random_state=241)
     clf.fit(X,y)
 
