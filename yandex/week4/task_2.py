@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 
-close_prices = pd.read_csv("week4-q2\\close_prices.csv")
+close_prices = pd.read_csv("close_prices.csv")
 
 X = close_prices.iloc[:,1:31]
 
