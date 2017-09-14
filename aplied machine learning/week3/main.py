@@ -49,7 +49,7 @@ print data
 labels = labeled_data.iloc[0:3635, :1]
 train_data, test_data, train_labeles, test_labeles = train_test_split(data,labels,train_size=0.9,random_state=250)
 
-clf = MLPClassifier(activation='relu',batch_size=200,random_state=247)
+clf = MLPClassifier(activation='relu',batch_size=255,random_state=247)
 #clf = DecisionTreeClassifier(random_state=247)
 #clf = svm.SVC(random_state=247)
 #clf = QuadraticDiscriminantAnalysis()
