@@ -18,32 +18,38 @@ train_img_data = pandas.read_csv('img_train.csv', index_col='Id')
 test_data = pandas.read_csv('test.csv',index_col='Id')
 test_img_data = pandas.read_csv('img_test.csv',index_col='Id')
 
-def abra_cadabra(parameter, data):
+def abra_cadabra(parameter, data, data2):
     something = Set()
     something_a= []
     for val in data[parameter]:
         something.add(val)
         something_a.append(val)
+    something_b = []
+    for val in data2[parameter]:
+        something.add(val)
+        something_b.append(val)
     something_le = preprocessing.LabelEncoder()
     something_le.fit(list(something))
     something_a = something_le.transform(something_a)
-    return something_a
+    something_b = something_le.transform(something_b)
+    return something_a,something_b
 
 
 
-languages_a = abra_cadabra('Language',labeled_data)
-countries_a = abra_cadabra('Country',labeled_data)
-ratings_a = abra_cadabra('Rating',labeled_data)
+languages_a, languages_b = abra_cadabra('Language',labeled_data, test_data)
+countries_a, countries_b = abra_cadabra('Country',labeled_data, test_data)
+ratings_a , ratings_b = abra_cadabra('Rating',labeled_data, test_data)
 
 
 
 labeled_data['Language'],labeled_data['Country'],labeled_data['Rating'] = languages_a,countries_a,ratings_a
-
-data = labeled_data.iloc[0:3635, 1:27]
+test_data['Language'],test_data['Country'],test_data['Rating'] = languages_b,countries_b,ratings_b
+data = labeled_data.iloc[:, 1:27]
 data['Poster'] = train_img_data['Prob']
-
+test_data['Poster'] = test_img_data['Prob']
+print test_data
 #data = preprocessing.scale(data)
-labels = labeled_data.iloc[0:3635, :1]
+labels = labeled_data.iloc[:, :1]
 
 clf = MLPClassifier(activation='relu',batch_size=255,random_state=247)
 #clf = DecisionTreeClassifier(random_state=247)
@@ -54,3 +60,10 @@ clf.fit(data,labels.values.ravel())
 print clf.predict_proba(test_data)[:,:1]
 print clf.predict(test_data)
 #print roc_auc_score(test_labeles,clf.predict(test_data))
+
+res = clf.predict(test_data)
+df = pandas.DataFrame(res)
+df.index.name = 'Id'
+df.index +=3636
+df.columns=['Probability']
+df.to_csv('results.csv',header=True)
