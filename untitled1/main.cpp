@@ -110,6 +110,7 @@ int main()
         cv::waitKey(1);
     }
     std::ofstream out("/home/apletea/PycharmProjects/untitled1/img_test.csv");
+    out << "Id,Prob" << std::endl;
     for (int i = 3636; i < 4544; ++i)
     {
         out << i << "," << mp[i]<< std::endl;

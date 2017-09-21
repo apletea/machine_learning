@@ -1,7 +1,7 @@
 import pandas
 import os
 from sets import  Set
-
+import pickle
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.model_selection import train_test_split
 from sklearn import svm
@@ -12,6 +12,8 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics import roc_curve,roc_auc_score
+
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 
 labeled_data = pandas.read_csv('train.csv', index_col='Id')
 train_img_data = pandas.read_csv('img_train.csv', index_col='Id')
@@ -47,21 +49,25 @@ test_data['Language'],test_data['Country'],test_data['Rating'] = languages_b,cou
 data = labeled_data.iloc[:, 1:27]
 data['Poster'] = train_img_data['Prob']
 test_data['Poster'] = test_img_data['Prob']
-print test_data
+#print test_data
 #data = preprocessing.scale(data)
 labels = labeled_data.iloc[:, :1]
 
-clf = MLPClassifier(activation='relu',batch_size=255,random_state=247)
+#clf = MLPClassifier(activation='relu',batch_size=255)
 #clf = DecisionTreeClassifier(random_state=247)
-#clf = svm.SVC(random_state=247)
+#clf = svm.SVC(random_state=247, kernel='rbf')
 #clf = QuadraticDiscriminantAnalysis()
 #clf = GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True)
+clf = GradientBoostingClassifier(n_estimators=100, learning_rate=.45, max_depth=1, random_state=247)
 clf.fit(data,labels.values.ravel())
-print clf.predict_proba(test_data)[:,:1]
+
+
+print clf.predict_proba(test_data)[:,1:]
+#print clf.predict_proba(test_data)
 print clf.predict(test_data)
 #print roc_auc_score(test_labeles,clf.predict(test_data))
 
-res = clf.predict(test_data)
+res =1- clf.predict_proba(test_data)[:,:1]
 df = pandas.DataFrame(res)
 df.index.name = 'Id'
 df.index +=3636
