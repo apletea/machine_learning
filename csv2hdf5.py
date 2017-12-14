@@ -1,3 +1,4 @@
+
 import csv
 import h5py
 import numpy as np
@@ -16,7 +17,7 @@ def encode_direction(direction):
 
 
 def data_matrix_from_csv(csv_filename,i,step):
-    data = pd.read_csv(csv_filename,skiprows=i,nrows=step)
+    data = pd.read_csv(csv_filename,names=['x','y','img'],skiprows=i+1,nrows=step,header=None)
     return data
 
 
@@ -29,13 +30,13 @@ def data_and_labels(data_matrix):
 
 
 def save_dataset_with(filename, data, labels, i):
-#    print data.astype("i4")
+    print data.astype("f8")
     f = h5py.File(filename, "a")
     if (i == 0):
         f.create_dataset("data", data.shape, dtype="f8")
         f.create_dataset("label", labels.shape, dtype="i4")
    # f["data"][:] = data.astype("f8")
-    f["label"][:] = labels.astype("i4")
+    #f["label"][:] = labels.astype("i4")
     f.close
 
 for i in xrange(0,1384,10):
