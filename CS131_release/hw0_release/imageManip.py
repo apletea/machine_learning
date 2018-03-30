@@ -18,7 +18,7 @@ def load(image_path):
 
     ### YOUR CODE HERE
     # Use skimage io.imread
-    pass
+    out = io.imread(image_path)
     ### END YOUR CODE
 
     return out
@@ -38,7 +38,8 @@ def change_value(image):
     out = None
 
     ### YOUR CODE HERE
-    pass
+    out = ((np.array(image,np.float32) ) * 0.5) **2
+    out = np.array(out,np.uint8)
     ### END YOUR CODE
 
     return out
@@ -54,9 +55,13 @@ def convert_to_grey_scale(image):
         out: numpy array of shape(image_height, image_width, 3)
     """
     out = None
-
     ### YOUR CODE HERE
-    pass
+    out = np.zeros((image.shape[0],image.shape[1],image.shape[2]))
+    for i in xrange(0,image.shape[0]):
+        for j in xrange(0,image.shape[1]):
+            out[i][j][0] = (image[i][j][0]/3 + image[i][j][1]/3 + image[i][j][2]/3)
+            out[i][j][1] = out[i][j][0]
+            out[i][j][2] = out[i][j][0]
     ### END YOUR CODE
 
     return out
@@ -72,10 +77,11 @@ def rgb_decomposition(image, channel):
         out: numpy array of shape(image_height, image_width, 3)
     """
 
-    out = None
-
+    change = np.zeros((image.shape[0],image.shape[1]))
     ### YOUR CODE HERE
-    pass
+    
+    out = image.copy()
+    out[:,:,channel] = change
     ### END YOUR CODE
 
     return out
@@ -90,17 +96,19 @@ def lab_decomposition(image, channel):
     Returns:
         out: numpy array of shape(image_height, image_width, 3)
     """
-
-    lab = color.rgb2lab(image)
-    out = None
+    g = image.copy()
+    lab = color.rgb2lab(g)
+    out = np.zeros((image.shape[0],image.shape[1],image.shape[2]))
 
     ### YOUR CODE HERE
-    pass
+    out[:,:,0] = lab [:,:,channel]
+    out[:,:,1] = lab [:,:,channel]
+    out[:,:,2] = lab [:,:,channel]
     ### END YOUR CODE
 
     return out
 
-def hsv_decomposition(image, channel='H'):
+def hsv_decomposition(image, channel):
     """ Return image decomposed to just the hsv channel specified
 
     Args:
@@ -112,10 +120,12 @@ def hsv_decomposition(image, channel='H'):
     """
 
     hsv = color.rgb2hsv(image)
-    out = None
+    out = np.zeros((image.shape[0],image.shape[1],image.shape[2]))
 
     ### YOUR CODE HERE
-    pass
+    out[:,:,0] = hsv [:,:,channel]
+    out[:,:,1] = hsv [:,:,channel]
+    out[:,:,2] = hsv [:,:,channel]
     ### END YOUR CODE
 
     return out
