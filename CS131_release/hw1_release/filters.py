@@ -20,7 +20,11 @@ def conv_nested(image, kernel):
     out = np.zeros((Hi, Wi))
 
     ### YOUR CODE HERE
-    pass
+    for i in xrange(0,Hi):
+        for j in xrange(0,Wi):
+            for k in xrange(0,Hk):
+                for l in xrange(0,Wk):
+                    out[i][j] += kernel[k][l] * image[i-k][j-l]        
     ### END YOUR CODE
 
     return out
@@ -44,10 +48,9 @@ def zero_pad(image, pad_height, pad_width):
     """
 
     H, W = image.shape
-    out = None
-
+    out = np.zeros((H + 2*pad_height, W + 2*pad_width))
     ### YOUR CODE HERE
-    pass
+    out[pad_height:H + pad_height, pad_width : W + pad_width] = image
     ### END YOUR CODE
     return out
 
@@ -74,9 +77,11 @@ def conv_fast(image, kernel):
     Hi, Wi = image.shape
     Hk, Wk = kernel.shape
     out = np.zeros((Hi, Wi))
-
     ### YOUR CODE HERE
-    pass
+    cp = zero_pad(image,Hk,Wk)
+    for i in xrange(0,Hi):
+        for j in xrange(0,Wi):
+            out[i][j] = np.sum(cp[i:i+Hk,j:j+Wk] * np.flip(kernel[:Hk][:Wk],axis=1))/(Hk*Wk)
     ### END YOUR CODE
 
     return out
@@ -115,7 +120,7 @@ def cross_correlation(f, g):
 
     out = None
     ### YOUR CODE HERE
-    pass
+    out = conv_nested(f,g)
     ### END YOUR CODE
 
     return out
@@ -134,8 +139,12 @@ def zero_mean_cross_correlation(f, g):
     """
 
     out = None
+    
     ### YOUR CODE HERE
-    pass
+    mean = g.mean()
+    cp = np.array(g,np.float32)
+    cp -= mean
+    out = cross_correlation(f,cp)
     ### END YOUR CODE
 
     return out
