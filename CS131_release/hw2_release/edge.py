@@ -152,35 +152,48 @@ def non_maximum_suppression(G, theta):
 
     # Round the gradient direction to the nearest 45 degrees
     theta = np.floor((theta + 22.5) / 45) * 45
-    
+    nms = np.copy(G)
+    magnitude = G
+    for i in range(theta.shape[0]-1):
+        for j in range(theta.shape[1]-1):
+            if (theta[i,j]<=22.5 or theta[i,j]>157.5):
+                if(magnitude[i,j]<=magnitude[i-1,j]) and (magnitude[i,j]<=magnitude[i+1,j]): nms[i,j]=0
+            if (theta[i,j]>22.5 and theta[i,j]<=67.5):
+                if(magnitude[i,j]<=magnitude[i-1,j-1]) and (magnitude[i,j]<=magnitude[i+1,j+1]): nms[i,j]=0
+            if (theta[i,j]>67.5 and theta[i,j]<=112.5):
+                if(magnitude[i,j]<=magnitude[i+1,j+1]) and (magnitude[i,j]<=magnitude[i-1,j-1]): nms[i,j]=0
+            if (theta[i,j]>112.5 and theta[i,j]<=157.5):
+                if(magnitude[i,j]<=magnitude[i+1,j-1]) and (magnitude[i,j]<=magnitude[i-1,j+1]): nms[i,j]=0
+
     ### BEGIN YOUR CODE
-    G = np.pad(G, 1, mode='edge')
-    for x in xrange(1,H):
-        for y in xrange(1,W):
-            if theta[x][y] == 45:
-                if (G[x][y] != np.max(G[x-1][y-1],np.max(G[x][y],G[x+1][y+1]))):
-                    out[x][y] = 0
-                else:
-                    out[x][y] = G[x][y]
-            if theta[x][y] == 90:
-                if (G[x][y] != np.max(G[x][y-1],np.max(G[x][y],G[x][y+1]))):
-                    out[x][y] = 0
-                else:
-                    out[x][y] = G[x][y]
-            if theta[x][y] == 135:
-                if (G[x][y] != np.max(G[x+1][y+1],np.max(G[x][y],G[x-1][y-1]))):
-                    out[x][y] = 0
-                else:
-                    out[x][y] = G[x][y]
-            if theta[x][y] == 0:
-                if (G[x][y] != np.max(G[x-1][y],np.max(G[x][y],G[x+1][y]))):
-                    out[x][y] = 0
-                else:
-                    out[x][y] = G[x][y]
+#    print G
+#    print theta
+#    for x in xrange(1,H):
+#        for y in xrange(1,W):
+#            if theta[x][y] == 45:
+#                if (G[x][y] != np.max(G[x-1][y-1],np.max(G[x][y],G[x+1][y+1]))):
+#                    out[x][y] = 0
+#                else:
+#                    out[x][y] = G[x][y]
+#            if theta[x][y] == 90:
+##                if (G[x][y] != np.max(G[x][y-1],np.max(G[x][y],G[x][y+1]))):
+ #                   out[x][y] = 0
+ #               else:
+ #                   out[x][y] = G[x][y]
+ #           if theta[x][y] == 135:
+  #              if (G[x][y] != np.max(G[x+1][y+1],np.max(G[x][y],G[x-1][y-1]))):
+   #                 out[x][y] = 0
+    #            else:
+     #               out[x][y] = G[x][y]
+      #      if theta[x][y] == 0:
+       #         if (G[x][y] != np.max(G[x-1][y],np.max(G[x][y],G[x+1][y]))):
+        #            out[x][y] = 0
+         #       else:
+          #          out[x][y] = G[x][y]
                
     ### END YOUR CODE
 
-    return out
+    return nms
 
 def double_thresholding(img, high, low):
     """
@@ -200,10 +213,18 @@ def double_thresholding(img, high, low):
 
     strong_edges = np.zeros(img.shape)
     weak_edges = np.zeros(img.shape)
-
+    img = img*25
     ### YOUR CODE HERE
-    pass
-    ### END YOUR CODE
+    weak_edges = np.array(weak_edges,np.bool)
+    strong_edges = np.array(strong_edges,np.bool)
+
+    for x in xrange(0,img.shape[0]):
+        for y in xrange(0,img.shape[1]):
+            if img[x][y] > high :
+                strong_edges[x][y] = True
+            elif img[x][y] > low :
+                weak_edges[x][y] = True
+                ### END YOUR CODE
 
     return strong_edges, weak_edges
 
@@ -255,7 +276,15 @@ def link_edges(strong_edges, weak_edges):
     edges = np.zeros((H, W))
 
     ### YOUR CODE HERE
-    pass
+    for i in xrange(H):
+        for j in xrange(W):
+            if (strong_edges[i][j]):
+                neighbors = get_neighbors(i,j,H,W)
+                edges[i][j] = True
+                for neighbor in  neighbors:
+                    if weak_edges[neighbor[0]][neighbor[1]]:
+                        edges[neighbor[0]][neighbor[1]] = True
+                        neighbors.append(get_neighbors(neighbor[0],neighbor[1],H,W)[0]) 
     ### END YOUR CODE
 
     return edges
@@ -273,7 +302,12 @@ def canny(img, kernel_size=5, sigma=1.4, high=20, low=15):
         edge: numpy array of shape(H, W)
     """
     ### YOUR CODE HERE
-    edge = cv2.Canny(img,low,high)
+    kernel = gaussian_kernel(kernel_size,sigma)
+    smothed = conv(img,kernel)
+    G,theta = gradient(smothed)
+    nms = non_maximum_suppression(G, theta)
+    strong_edges, weak_edges = double_thresholding(nms, high, low)
+    edge = link_edges(strong_edges, weak_edges)
     ### END YOUR CODE
 
     return edge
@@ -313,7 +347,14 @@ def hough_transform(img):
     # Find rho corresponding to values in thetas
     # and increment the accumulator in the corresponding coordiate.
     ### YOUR CODE HERE
-    pass
+    for i in range(len(x_idxs)):
+    x = xs[i]
+    y = ys[i]
+
+    for t_idx in range(num_thetas):
+      # Calculate rho. diag_len is added for a positive index
+        rho = round(x * cos_t[t_idx] + y * sin_t[t_idx]) + diag_len
+        accumulator[rho, t_idx] += 1
     ### END YOUR CODE
 
     return accumulator, rhos, thetas
