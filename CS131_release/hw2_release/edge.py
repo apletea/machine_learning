@@ -1,5 +1,5 @@
 import numpy as np
-
+import cv2
 def conv(image, kernel):
     """ An implementation of convolution filter.
 
@@ -27,7 +27,9 @@ def conv(image, kernel):
     padded = np.pad(image, pad_width, mode='edge')
 
     ### YOUR CODE HERE
-    pass
+    for i in xrange(0,Hi):
+        for j in xrange(0,Wi):
+            out[i][j] = np.sum(padded[i:i+Hk,j:j+Wk] * np.flip(kernel[:Hk][:Wk],axis=0))/(Hk*Wk)
     ### END YOUR CODE
 
     return out
@@ -50,11 +52,16 @@ def gaussian_kernel(size, sigma):
     """  
     
     kernel = np.zeros((size, size))
-
+    k = (size-1)/2
     ### YOUR CODE HERE
-    pass
+    for x in xrange(0,size):
+        for y in xrange(0,size):
+            top = (x-k)**2 + (y-k)**2
+            bot = 2*(sigma**2)
+            exp = np.exp(-float(top)/bot)
+            kernel[x][y] = (1/((2*np.pi)*sigma**2))*exp
     ### END YOUR CODE
-
+    print kernel
     return kernel
 
 def partial_x(img):
@@ -68,13 +75,15 @@ def partial_x(img):
     Returns:
         out: x-derivative image
     """
-
-    out = None
+    padded = np.pad(img, 1, mode='edge')
+    out = np.zeros(img.shape)
 
     ### YOUR CODE HERE
-    pass
+    for i in xrange(1,padded.shape[0]-1):
+        for j in xrange(1,padded.shape[1]-1):
+            out[i-1][j-1] =  (padded[i][j+1] - padded[i][j-1])/float(2)
     ### END YOUR CODE
-
+    ### END YOUR CODE
     return out
 
 def partial_y(img):
@@ -88,11 +97,14 @@ def partial_y(img):
     Returns:
         out: y-derivative image
     """
-
-    out = None
+    padded = np.pad(img, 1, mode='edge')
+    out = np.zeros(img.shape)
 
     ### YOUR CODE HERE
-    pass
+    for i in xrange(1,padded.shape[0]-1):
+        for j in xrange(1,padded.shape[1]-1):
+            out[i-1][j-1] =  (padded[i+1][j] - padded[i-1][j])/float(2)
+    ### END YOUR CODE
     ### END YOUR CODE
 
     return out
@@ -111,9 +123,12 @@ def gradient(img):
     """
     G = np.zeros(img.shape)
     theta = np.zeros(img.shape)
-
+    
     ### YOUR CODE HERE
-    pass
+    Gx = partial_x(img)
+    Gy = partial_y(img)
+    G = np.sqrt(Gx**2+Gx**2)
+    theta= np.arctan2(Gx,Gy)
     ### END YOUR CODE
 
     return G, theta
@@ -137,9 +152,32 @@ def non_maximum_suppression(G, theta):
 
     # Round the gradient direction to the nearest 45 degrees
     theta = np.floor((theta + 22.5) / 45) * 45
-
+    
     ### BEGIN YOUR CODE
-    pass
+    G = np.pad(G, 1, mode='edge')
+    for x in xrange(1,H):
+        for y in xrange(1,W):
+            if theta[x][y] == 45:
+                if (G[x][y] != np.max(G[x-1][y-1],np.max(G[x][y],G[x+1][y+1]))):
+                    out[x][y] = 0
+                else:
+                    out[x][y] = G[x][y]
+            if theta[x][y] == 90:
+                if (G[x][y] != np.max(G[x][y-1],np.max(G[x][y],G[x][y+1]))):
+                    out[x][y] = 0
+                else:
+                    out[x][y] = G[x][y]
+            if theta[x][y] == 135:
+                if (G[x][y] != np.max(G[x+1][y+1],np.max(G[x][y],G[x-1][y-1]))):
+                    out[x][y] = 0
+                else:
+                    out[x][y] = G[x][y]
+            if theta[x][y] == 0:
+                if (G[x][y] != np.max(G[x-1][y],np.max(G[x][y],G[x+1][y]))):
+                    out[x][y] = 0
+                else:
+                    out[x][y] = G[x][y]
+               
     ### END YOUR CODE
 
     return out
@@ -235,7 +273,7 @@ def canny(img, kernel_size=5, sigma=1.4, high=20, low=15):
         edge: numpy array of shape(H, W)
     """
     ### YOUR CODE HERE
-    pass
+    edge = cv2.Canny(img,low,high)
     ### END YOUR CODE
 
     return edge
