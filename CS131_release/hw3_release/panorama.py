@@ -33,8 +33,16 @@ def harris_corners(img, window_size=3, k=0.04):
     dx = filters.sobel_v(img)
     dy = filters.sobel_h(img)
 
-    ### YOUR CODE HERE
-    pass
+    ### YOUR  HERE
+    dx2 = dx**2
+    dy2 = dy**2
+    dxy = dx*dy
+    
+    Sx = convolve(dx2,window)
+    Sy = convolve(dy2,window)
+    Sxy= convolve(dxy,window)
+    
+    response = Sx * Sy - np.square(Sxy) - k * np.square(Sx + Sy)
     ### END YOUR CODE
 
     return response
