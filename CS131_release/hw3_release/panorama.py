@@ -151,7 +151,9 @@ def fit_affine_matrix(p1, p2):
     p2 = pad(p2)
 
     ### YOUR CODE HERE
-    pass
+    H = np.linalg.lstsq(p2, p1, rcond=None)[0]
+    #print m
+#    print c
     ### END YOUR CODE
 
     # Sometimes numerical issues cause least-squares to produce the last
