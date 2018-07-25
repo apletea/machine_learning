@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 from scipy.ndimage.filters import convolve
 
 from utils import pad, unpad
-
+import random
 
 def harris_corners(img, window_size=3, k=0.04):
     """
@@ -165,13 +165,11 @@ def fit_affine_matrix(p1, p2):
 def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
     """
     Use RANSAC to find a robust affine transformation
-
         1. Select random set of matches
         2. Compute affine transformation matrix
         3. Compute inliers
         4. Keep the largest set of inliers
         5. Re-compute least-squares estimate on all of the inliers
-
     Args:
         keypoints1: M1 x 2 matrix, each row is a point
         keypoints2: M2 x 2 matrix, each row is a point
@@ -179,40 +177,60 @@ def ransac(keypoints1, keypoints2, matches, n_iters=200, threshold=20):
             [index of keypoint1, index of keypoint 2]
         n_iters: the number of iterations RANSAC will run
         threshold: the number of threshold to find inliers
-
     Returns:
         H: a robust estimation of affine transformation from keypoints2 to
         keypoints 1
     """
     N = matches.shape[0]
     n_samples = int(N * 0.2)
-
     matched1 = pad(keypoints1[matches[:,0]])
     matched2 = pad(keypoints2[matches[:,1]])
-
-    max_inliers = np.zeros(N)
+    max_inliers = np.zeros(N,dtype='uint16')
     n_inliers = 0
-
+    H = None
     # RANSAC iteration start
+
     ### YOUR CODE HERE
-    pass
+
+    for i in range(n_iters):
+        n_inliers = 0
+        current_inliers = np.zeros(N,dtype='uint16')
+        # 1. Select random points
+        random_indices = random.sample(range(matched1.shape[0]), n_samples)
+        random_matched1 = [matched1[i] for i in random_indices]
+        random_matched2 = [matched2[i] for i in random_indices]
+
+        # 2. Compute affine transformation matrix
+        affine_transformation_matrix, _, _, _ = np.linalg.lstsq(random_matched2, random_matched1)
+
+        #3. Detected inliers
+        for i in range(len(matched1)):
+            if np.sum((matched1[i] - np.matmul(matched2[i],affine_transformation_matrix))**2) < threshold:
+                current_inliers[i] = 1
+                n_inliers += 1
+        # 4. Keep the largest set of inliers
+        if n_inliers > np.sum(max_inliers):
+            max_inliers = np.copy(current_inliers)
+            H = affine_transformation_matrix
+
+    # 5. Re-compute least-squares estimate on all of the inliers
+
+    affine_transformation_matrix, _, _, _ = np.linalg.lstsq(keypoints2[matches[max_inliers][:,1]],
+                                                            keypoints1[matches[max_inliers][:,0]])
     ### END YOUR CODE
-    return H, matches[max_inliers]
+    return H, np.array([matches[i] for i in range(np.array(max_inliers).shape[0]) if max_inliers[i]==1])
 
 
 def hog_descriptor(patch, pixels_per_cell=(8,8)):
     """
     Generating hog descriptor by the following steps:
-
     1. compute the gradient image in x and y (already done for you)
     2. compute gradient histograms
     3. normalize across block 
     4. flattening block into a feature vector
-
     Args:
         patch: grayscale image patch of shape (h, w)
         pixels_per_cell: size of a cell with shape (m, n)
-
     Returns:
         block: 1D array of shape ((h*w*n_bins)/(m*n))
     """
@@ -238,9 +256,29 @@ def hog_descriptor(patch, pixels_per_cell=(8,8)):
 
     cells = np.zeros((rows, cols, n_bins))
 
-    # Compute histogram per cell
+
     ### YOUR CODE HERE
-    pass
+    # For each block - create a histogram
+    for i in range(rows):
+        for j in range(cols):
+            for z in range(pixels_per_cell[0]):
+                for t in range(pixels_per_cell[1]):
+                    # Divide the cell's value between it's 2 closest bins
+                    distance_to_lower_bin = theta_cells[i][j][z][t] % degrees_per_bin
+                    division_ratio = float(distance_to_lower_bin) / degrees_per_bin
+                    lower_bin_num = (int(np.trunc(theta_cells[i][j][z][t] / degrees_per_bin))) % 9
+
+                    # Since the angles are circular - 0 comes after 8.
+
+                    upper_bin_num = (lower_bin_num + 1) % 9
+                    # print('value {}, lower bin {}'.format(theta_cells[i][j][z][t], lower_bin_num))
+                    cells[i][j][upper_bin_num] += (division_ratio*G_cells[i][j][z][t])
+                    # print(i,j,lower_bin_num)
+                    cells[i][j][lower_bin_num] += ((1-division_ratio) * G_cells[i][j][z][t])
+
+            # Normalize
+            cells[i][j] = cells[i][j] / np.linalg.norm(cells[i][j])
+    block = cells.flatten()
     ### YOUR CODE HERE
     
     return block
