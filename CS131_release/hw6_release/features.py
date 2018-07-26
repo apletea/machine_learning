@@ -71,7 +71,13 @@ class PCA(object):
         #     1. compute the covariance matrix of X, of shape (D, D)
         #     2. compute the eigenvalues and eigenvectors of the covariance matrix
         #     3. Sort both of them in decreasing order (ex: 1.0 > 0.5 > 0.0 > -0.2 > -1.2)
-        pass
+        multiplied_matrix = np.matmul(X.T, X) / (X.shape[0]-1)
+        e_vals, e_vecs= np.linalg.eig(multiplied_matrix)
+
+        sort_args = np.argsort(e_vals)[::-1]
+        # The returned values are complex because of numberical issues
+        e_vecs = np.real(e_vecs[:, sort_args])
+        e_vals = np.real(e_vals[sort_args])
         # END YOUR CODE
 
         # Check the output shapes
@@ -96,7 +102,10 @@ class PCA(object):
         # YOUR CODE HERE
         # Here, compute the SVD of X
         # Make sure to return vecs as the matrix of vectors where each column is a singular vector
-        pass
+        u, s ,v = np.linalg.svd(X)
+        vecs = v.T
+        vals = s
+        
         # END YOUR CODE
         assert vecs.shape == (D, D)
         K = min(N, D)

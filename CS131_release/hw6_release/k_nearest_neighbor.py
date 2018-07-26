@@ -27,7 +27,7 @@ def compute_distances(X1, X2):
     #
     # HINT: Try to formulate the l2 distance using matrix multiplication
 
-    pass
+    dists = np.sum(X1, axis=1)[:, np.newaxis] + np.sum(X2 ** 2, axis=1) -2 * np.dot(X1, X2.T)
     # END YOUR CODE
 
     assert dists.shape == (M, N), "dists should have shape (M, N), got %s" % dists.shape
@@ -65,7 +65,9 @@ def predict_labels(dists, y_train, k=1):
         # label.
 
         # YOUR CODE HERE
-        pass
+        closest_y = y_train[np.argsort(dists[i])[:k]]
+        most_common = max(set(closest_y), key=list(closest_y).count)
+        y_pred[i] = most_common
         # END YOUR CODE
 
     return y_pred
@@ -100,7 +102,7 @@ def split_folds(X_train, y_train, num_folds):
 
     """
     assert X_train.shape[0] == y_train.shape[0]
-
+    length = X_train.shape[0]
     validation_size = X_train.shape[0] // num_folds
     training_size = X_train.shape[0] - validation_size
 
@@ -111,7 +113,17 @@ def split_folds(X_train, y_train, num_folds):
 
     # YOUR CODE HERE
     # Hint: You can use the numpy array_split function.
-    pass
+    X_train_splitted = np.array(np.array_split(X_train, num_folds))
+    y_train_splitted = np.array(np.array_split(y_train, num_folds))
+    for i in range(num_folds):
+
+        # For indexing - generate a boolean array with False in the index we use as validation
+        # Select the splitted parts to use, merge them afterwards with the reshape function
+        X_trains[i] = X_train_splitted[(np.arange(num_folds)!=i)].reshape((-1, X_trains.shape[-1]))
+        X_vals[i] = X_train_splitted[i]
+
+        y_trains[i] = y_train_splitted[(np.arange(num_folds)!=i)].reshape((-1, y_trains.shape[-1]))
+        y_vals[i] = y_train_splitted[i]
     # END YOUR CODE
 
     return X_trains, y_trains, X_vals, y_vals

@@ -20,9 +20,12 @@ def compress_image(image, num_values):
     #     1. Get SVD of the image
     #     2. Only keep the top `num_values` singular values, and compute `compressed_image`
     #     3. Compute the compressed size
-    pass
+    U,s,V = np.linalg.svd(image)
+    compressed_image = np.dot(U[:,:num_values],np.dot(np.diag(s[:num_values]),V[:num_values,:]))
+#    compressed_image = np.dot(u,np.dot(np.diag(values), vh))
+    compressed_size = compressed_image.shape[0] * compressed_image.shape[1]
     # END YOUR CODE
-
+    compressed_size = np.size(U[:, :num_values]) + np.size(s[:num_values]) + np.size(V[:,:num_values])
     assert compressed_image.shape == image.shape, \
            "Compressed image and original image don't have the same shape"
 
