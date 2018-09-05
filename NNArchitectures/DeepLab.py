@@ -108,4 +108,4 @@ def crf(original_image, mask_img):
 
 model = get_model()
 print(model.summary())
-plot_model(model, 'deeplabV1.png')
+plot_model(model, 'deeplabV1.png',show_layer_names=True, show_shapes=True)
