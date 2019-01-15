@@ -39,6 +39,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'ryanoasis/vim-devicons'
     Plug 'vim-scripts/AutoComplPop'
     Plug 'Rip-Rip/clang_complete'
+    Plug 'davidhalter/jedi-vim'
 call plug#end()
 syntax on
 filetype plugin indent on
@@ -71,7 +72,7 @@ let g:deoplete_enable_on_startup = 1
 "let g:acp_behavior={
 			"\ 'c': 		[],
 			"\ 'cpp': 	[],
-			"\}
+			"\ 'python':  []}
 "call add(g:acp_behavior.c, {
 			"\ 	'command': 		"\<C-x>\<C-u>",
 			"\ 	'completefunc': "ClangComplete",
