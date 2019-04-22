@@ -1,6 +1,5 @@
 call plug#begin('~/.vim/plugged')
-
-    Plug 'autozimu/LanguageClient-neovim', {
+Plug 'autozimu/LanguageClient-neovim', {
         \ 'branch': 'next',
         \ 'do': 'bash install.sh',
         \ }
@@ -40,12 +39,13 @@ call plug#begin('~/.vim/plugged')
     Plug 'vim-scripts/AutoComplPop'
     Plug 'Rip-Rip/clang_complete'
     Plug 'davidhalter/jedi-vim'
+    Plug 'romainl/Apprentice'
 call plug#end()
 syntax on
 filetype plugin indent on
 
 set number
-set tabstop=8 softtabstop=0 expandtab shiftwidth=4 smarttab
+set tabstop=4 shiftwidth=4 expandtab
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
@@ -55,11 +55,11 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 
-colorscheme apprentice
 set hidden
+colorscheme apprentice
 
 let g:LanguageClient_serverCommands = {
-            \ "cpp": ["/home/dmitry.kamarouski/clion-2018.2.3/bin/clang/linux/clangd"],
+            \ "cpp": ["/home/apletea/clion-2018.2.4/bin/clang/linux/clangd"],
             \ "python": ["pyls"],
             \ }
 
